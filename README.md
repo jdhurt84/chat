@@ -2,13 +2,52 @@
 
 Runnable starter implementation for daily ingestion, classification, scoring, dedupe, persistence, digest generation, and optional email delivery.
 
-## Quick start (daily update run)
+## How to trigger a run
+
+### 1) Trigger once from CLI (most common)
+
+```bash
+python main.py --no-email
+```
+
+If you want local/sample data only:
+
+```bash
+python main.py --sample-only --no-email
+```
+
+### 2) Trigger once via API
+Start API server:
+
+```bash
+uvicorn app.api.main:app --reload
+```
+
+Trigger a run:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/run?sample_only=false&no_email=false"
+```
+
+### 3) Trigger automatically every day
+
+```bash
+python main.py --daemon --interval-hours 24
+```
+
+### 4) Trigger from cron (recommended for production)
+Run `crontab -e` and add:
+
+```cron
+0 7 * * * cd /workspace/chat && /usr/bin/python3 main.py >> /workspace/chat/run.log 2>&1
+```
+
+## Quick setup
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python main.py --no-email
 ```
 
 What happens each run:
@@ -32,31 +71,13 @@ export SMTP_TO="team@example.com"
 export SMTP_SUBJECT="Daily Monitoring Digest"
 ```
 
-Then run:
+Then trigger:
 
 ```bash
 python main.py
 ```
 
-## Run in sample-only mode
-
-```bash
-python main.py --sample-only --no-email
-```
-
-## Run continuously every 24h
-
-```bash
-python main.py --daemon --interval-hours 24
-```
-
-## Run API
-
-```bash
-uvicorn app.api.main:app --reload
-```
-
-Endpoints:
+## API endpoints
 - `GET /health`
 - `POST /run?sample_only=true|false&no_email=true|false`
 - `GET /signals`
